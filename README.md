@@ -1,7 +1,5 @@
 # E-commerce Repeat buyers churn prediction using machine learning
-Created by Frank Jiang
-![Project_image](https://i.pinimg.com/originals/a2/9e/f3/a29ef3c31e530c749c9dcf5451cf8f5b.jpg)
- 
+
  ---
  ### Table of Contents
  
