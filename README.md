@@ -1,15 +1,6 @@
 # E-commerce Repeat Buyers Churn Prediction Using Machine Learning
 
-## Table of Contents
-- [Description](#description)
-- [Data](#data)
-- [Feature Engineering](#feature-engineering)
-- [Model Fitting](#model-fitting)
-- [Cross Validation Algorithm](#cross-validation-algorithm)
-- [Results](#results)
-- [Deep Learning Extension](#deep-learning-extension)
-- [References](#references)
-- [Resources](#resources)
+
 
 ---
 
