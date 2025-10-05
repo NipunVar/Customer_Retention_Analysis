@@ -1,151 +1,111 @@
-# E-commerce Repeat buyers churn prediction using machine learning
+# E-commerce Repeat Buyers Churn Prediction Using Machine Learning
 
- ---
- ### Table of Contents
- 
-   - [Description](#Description)
-   - [Data](#Data)
-   - [Feature Engineering](#Feature-Engineering)
-   - [Model Fitting](#Model-Fitting)
-   - [Cross Validation Algorithm](#Cross-Validation-Algorithm)
-   - [Results](#Results)
-   - [Extension: Deep learning with tensorflow](#Deep-Learning-with-Tensorflow)
-   - [Reference](#Reference)
-   - [Resources](#Resources)
- ---
- 
- ## Description
- 
- ### Business Interest and background
-Merchants sometimes run big promotions (e.g., discounts or cash coupons) on particular dates
-(e.g., Boxing-day Sales, "Black Friday" or "Double 11 (Nov 11th)", in order to attract a large
-number of new buyers. Unfortunately, many of the attracted buyers are one-time deal hunters,
-and these promotions may have a little long-lasting impact on sales. To solve this problem, it is
-important for merchants to identify who can be converted into repeated buyers. By targeting
-these potential loyal customers, merchants can greatly reduce the promotion cost and enhance
-investment (ROI) return.
+## Table of Contents
+- [Description](#description)
+- [Data](#data)
+- [Feature Engineering](#feature-engineering)
+- [Model Fitting](#model-fitting)
+- [Cross Validation Algorithm](#cross-validation-algorithm)
+- [Results](#results)
+- [Deep Learning Extension](#deep-learning-extension)
+- [References](#references)
+- [Resources](#resources)
 
-For more details, you are more than welcome to read our [Final Report](Final Report.pdf)
+---
 
-## Data 
+## Description
 
-### Data source
+### Business Interest and Background
+Merchants often run large promotions (e.g., discounts or cash coupons) on major sales events like Boxing Day, Black Friday, or Double 11 (Nov 11th) to attract new buyers. Many of these buyers are one-time deal hunters, limiting the long-term impact on sales. Predicting which customers are likely to become repeat buyers helps merchants target potential loyal customers, reduce promotion costs, and improve ROI.  
 
-Alibaba Cloud provides the data. The data set contains anonymized users' shopping logs in the
-past six months before and on the "Double 11" day, and the label information indicating whether
-they are repeated buyers. Due to privacy issues, data is sampled in a biased way, so the statistical
-result on this data set would deviate from the actual of Tmall.com. Nevertheless, it will not affect
-the applicability of the solution.
+---
 
- [Back To The Top](#Table-of-Contents)
- 
+## Data
+
+### Data Source
+The dataset is provided by Alibaba Cloud and contains anonymized user shopping logs from the six months leading up to "Double 11" along with labels indicating repeat buyers. Due to privacy concerns, the data is sampled, which may not reflect the exact statistics of Tmall.com, but it is sufficient for modeling purposes.
+
 ### Data Processing
- 
- The first challenge we faced is the considerable scale of our data. Our training dataset contains
-260864 users’ data, including their profile information and log activities. We failed to read in
-data to pandas data frame directly. To solve this problem, we used pandas ‘chunksize = 10000’,
-which enable us to process the user_log and user_info data for further analysis.
+The training dataset contains 260,864 users' data, including profile information and user activity logs. Due to the large size, the data was processed in chunks using pandas (`chunksize=10000`) to manage memory efficiently.  
 
 ### Exploratory Data Analysis
-Through initial EDA, we are able to find some interesting results.
+Initial EDA revealed insights into user profiles and behavior:
 
-![User_Profile](Supporting%20Materials/User_Profile.PNG)
-*_Figure 1 User Profile Description_
+- **User Profile**: Demographics and basic user information  
+- **User Behavior**: Purchase and browsing activity patterns  
+- **Total Actions**: Overall user activity counts  
+- **Action By Month**: Monthly distribution of actions  
 
-![User_Behavior](Supporting%20Materials/User_Behavior.PNG)
-*_Figure 2 User Behavior Description_
+---
 
-![Total_Actions](Supporting%20Materials/Total_Actions.PNG)
-*_Figure 3 Total Actions_
+## Feature Engineering
 
-![Action_By_Month](Supporting%20Materials/Action_By_Month.PNG)
-*_Figure 4 Action By Month Distribution_
+Features were generated using aggregation and grouping techniques. The final dataset includes 81 features categorized into:
 
- ## Feature Engineering
- We generated new features by aggregating and grouping to generate 5 types of feature: Action Based Feature, 
- Day Based Feature, Product Diversity, User-merchant similarity, and Recent activities.
- 
- ![Feature_Engieering](Supporting%20Materials/Feature_Engineering.PNG)
- *_Figure 5 Feature Engineering Example_
- 
- This ends with a total of 81 features that are added into the training and testing dataset.
- 
- [Back To The Top](#Table-of-Contents)
+1. **Action-Based Features**  
+2. **Day-Based Features**  
+3. **Product Diversity**  
+4. **User-Merchant Similarity**  
+5. **Recent Activities**  
 
- ## Model Fitting
-In this project, we decide to take the traditional approach in model selection and focus on solving the imbalance outcome issues. 
- We fit the following list of model:
- 1. Random Forest
- 2. Logistic Regression
- 3. Gradient Boosting Machine
- 4. Extreme Gradient Boosting
- 
- In order to avoid the imbalance outcome from overfitting the model, we decide to use the following sampler to balance the data:
- 1. SMOTE
- 2. Random Under Sampler
- 3. ADASYN
- 
- ## Cross Validation Algorithm 
- The traditional k-fold cross-validation algorithm would not work as it does not support applying different samplers. Therefore, we
-decide to implement a stratified k-fold cross-validation algorithm. We built a simple k-fold
-cross-validation algorithm that takes in arguments of the model, data input, data outcome(label),
-number of folds, scoring metrics, and sampling method. This algorithm supports all scoring
-metrics that are available in ‘sklearn.metrics’ package. Overall, this algorithm computes the
-cross-validation score while adjusting for the imbalance in the outcome. 
- 
-For details regarding the simple algorithm, please see our final report.
+These features were added to both the training and testing datasets.  
 
- [Back To The Top](#Table-of-Contents)
+---
+
+## Model Fitting
+
+Several traditional machine learning models were evaluated to handle the imbalanced outcome:
+
+- Random Forest  
+- Logistic Regression  
+- Gradient Boosting Machine  
+- Extreme Gradient Boosting (XGBoost)  
+
+To address data imbalance, the following sampling techniques were used:
+
+- SMOTE  
+- Random Under Sampler  
+- ADASYN  
+
+---
+
+## Cross Validation Algorithm
+
+A stratified k-fold cross-validation algorithm was implemented to handle data imbalance. It supports multiple scoring metrics from `sklearn.metrics` and allows the integration of different sampling methods. The algorithm evaluates model performance while adjusting for the imbalanced target variable.  
+
+---
 
 ## Results
-We use Accuracy and AUC score as our criterion for model evaluation. 
 
-![Performance](Supporting%20Materials/Performance.PNG)
-*_Figure 6 Performance under 5-fold cross validation_
+Models were evaluated using **Accuracy** and **AUC**.  
 
-**XGBoost with SMOTE as the sampler** has the best performance with the highest accuracy and relatively high AUC. 
-Based on the best model, we can explore some business insight from the importance plot.
+- **Best Performing Model**: XGBoost with SMOTE  
+- **Observations**: The model achieved the highest accuracy and a strong AUC score. Feature importance analysis provides insights for predicting repeat buyers.  
 
-![Importance_Plot](Supporting%20Materials/Importance_Plot.PNG)
-For detailed interpretation on importance feature and actionable insight on predicting repeat-customer, please see our presentation slides.
+---
 
-## Deep Learning with Tensorflow
-After this project was completed, the model does not performed to our expectation. Therefore, we decided to adopt deep learning for a better performed model.
-We used tensorflow with Keras to build a neural network with an extra hidden layer between input and output layer. In order to handle the imbalanced issue, we have compared
-using initial weights, class weights, and oversampling to avoid overfit. For detailed model training and performance, please see the source code in the deep learning folder. 
+## Deep Learning Extension
 
-[Back To The Top](#Table-of-Contents)
+To improve performance, a neural network was implemented using **TensorFlow** and **Keras**:
 
-## Reference
-[1] Guimei Liu, Tam T. Nguyen, Gang Zhao. Repeat Buyer Prediction for E-Commerce
-https://www.kdd.org/kdd2016/papers/files/adf0160-liuA.pdf
+- Added an extra hidden layer between the input and output layers  
+- Handled class imbalance using initial weights, class weights, and oversampling  
+- Achieved improved model performance over traditional machine learning models  
 
-[2] Rahul Bhagat, Srevatsan Muralidharan. Buy It Again: Modeling Repeat Purchase
-Recommendations[J]. KDD 2018, August 19-23, 2018, London, United Kingdom
-https://assets.amazon.science/40/e5/89556a6341eaa3d7dacc074ff24d/buy-it-again-modelingrepeat-purchase-recommendations.pdf
+---
 
-[3] Huibing Zhang, Junchao Dong. Prediction of Repeat Customers on E-Commerce Platform
-Based on Blockchain[J]. Wireless Communications and Mobile Computing Volume 2020,
-Article ID 8841437, 15 pages
-https://www.hindawi.com/journals/wcmc/2020/8841437/
+## References
 
-[4] D. M. Blei, A. Y. Ng, and M. I. Jordan. Latent dirichlet allocation. Journal of Machine
-Learning Research, 3(4-5):993–1022, 2003.
+1. Guimei Liu, Tam T. Nguyen, Gang Zhao. *Repeat Buyer Prediction for E-Commerce*. [KDD 2016](https://www.kdd.org/kdd2016/papers/files/adf0160-liuA.pdf)  
+2. Rahul Bhagat, Srevatsan Muralidharan. *Buy It Again: Modeling Repeat Purchase Recommendations*. [KDD 2018](https://assets.amazon.science/40/e5/89556a6341eaa3d7dacc074ff24d/buy-it-again-modelingrepeat-purchase-recommendations.pdf)  
+3. Huibing Zhang, Junchao Dong. *Prediction of Repeat Customers on E-Commerce Platform Based on Blockchain*. [Wireless Communications and Mobile Computing, 2020](https://www.hindawi.com/journals/wcmc/2020/8841437/)  
+4. D. M. Blei, A. Y. Ng, M. I. Jordan. *Latent Dirichlet Allocation*. JMLR, 3(4-5):993–1022, 2003.  
+5. L. Breiman. *Random Forests*. Machine Learning, 45(1):5–32, 2001.  
+6. T. Chen, T. He. *XGBoost: Extreme Gradient Boosting*. [GitHub](https://github.com/dmlc/xgboost)  
+7. M. Dash, H. Liu. *Feature Selection for Classification*. Intelligent Data Analysis, 1(1):131–156, 1997  
 
-[5] L. Breiman. Random forests. Mach. Learn., 45(1):5–32, 2001.
+---
 
-[6] T. Chen and T. He. Xgboost: extreme gradient boosting.
-Available on https://github.com/dmlc/xgboost.
+## Resources
 
-[7] M. Dash and H. Liu. Feature selection for classification. Intelligent data analysis, 1(1):131–
-156, 1997.
-
- ## Resources
- The links to the original data source can be found here: https://tianchi.aliyun.com/competition/entrance/231576/information
- 
- The links to our presentation for consulting purposes can be found here: 
- [Presentation](#final%20present.pptx) 
- 
- [Back To The Top](#Table-of-Contents)
- 
- 
+Original dataset can be found [here](https://tianchi.aliyun.com/competition/entrance/231576/information)
