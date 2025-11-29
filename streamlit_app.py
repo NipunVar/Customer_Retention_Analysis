@@ -363,7 +363,6 @@ if page == "Overview":
 elif page == "Prediction Explorer":
     st.title("Prediction Explorer")
 
-    # Short overview of what the Prediction Explorer does (approx 100 words)
     st.markdown(
         """
         **About this explorer:** This interactive Prediction Explorer lets you load the model prediction CSV, quickly
@@ -379,37 +378,29 @@ elif page == "Prediction Explorer":
         st.info("No prediction CSV found (looking for filenames containing 'prediction').")
     else:
         st.success(f"Loaded: {os.path.basename(pred_csv)}")
-        # Read CSV (safe encoding)
         try:
             df = pd.read_csv(pred_csv)
         except Exception:
             df = pd.read_csv(pred_csv, encoding="latin-1")
 
-        # Detect probable prediction/label columns
         lower_cols = [c.lower() for c in df.columns]
         prediction_candidates = [c for c in df.columns if any(k in c.lower() for k in ("pred", "score", "prob", "probability", "prediction"))]
         label_candidates = [c for c in df.columns if any(k in c.lower() for k in ("label", "target", "y_true", "actual"))]
 
-        # layout: left controls, right preview (wider)
         left, right = st.columns([1, 2])
 
         with left:
             st.markdown("#### Filters & Controls")
             st.write(f"Rows in file: **{len(df):,}**")
 
-            # Quick metrics (live)
             total_rows = len(df)
             positive_rate = None
             if prediction_candidates:
-                # pick first numeric-like prediction column
                 pred_col = prediction_candidates[0]
                 try:
                     numeric_pred = pd.to_numeric(df[pred_col], errors='coerce')
-                    # if it's probability-like (0-1), compute mean; otherwise show median
                     if numeric_pred.dropna().between(0, 1).all():
                         positive_rate = numeric_pred.mean()
-                    else:
-                        positive_rate = None
                 except Exception:
                     positive_rate = None
 
@@ -420,18 +411,14 @@ elif page == "Prediction Explorer":
             else:
                 c2.metric("Prediction column", prediction_candidates[0] if prediction_candidates else "Not found")
 
-            # select columns to display
             cols = list(df.columns)
             default_cols = cols[:min(10, len(cols))]
             display_cols = st.multiselect("Columns to display", cols, default=default_cols)
 
-            # sample size control
             sample_n = st.number_input("Max rows to preview", min_value=10, max_value=min(100000, len(df)), value=200, step=10)
 
-            # quick search across string columns
-            search_text = st.text_input("Search (applies to all string columns)", value="")
+            # REMOVED SEARCH BOX COMPLETELY
 
-            # choose a column-specific filter
             column = st.selectbox("Column-specific filter", ["-- None --"] + cols)
             df_filtered = df.copy()
 
@@ -447,18 +434,6 @@ elif page == "Prediction Explorer":
                     if sel_vals:
                         df_filtered = df_filtered[df_filtered[column].astype(str).isin(sel_vals)]
 
-            # search across string columns
-            if search_text:
-                str_cols = df_filtered.select_dtypes(include=["object", "string"]).columns.tolist()
-                if str_cols:
-                    mask = pd.Series(False, index=df_filtered.index)
-                    for c in str_cols:
-                        mask = mask | df_filtered[c].astype(str).str.contains(search_text, case=False, na=False)
-                    df_filtered = df_filtered[mask]
-                else:
-                    st.info("No string columns to search in this dataset.")
-
-            # advanced filters
             with st.expander("Advanced filters"):
                 st.write("Add any quick transformations or preview sorting here.")
                 sort_col = st.selectbox("Sort by (optional)", ["-- None --"] + cols)
@@ -469,17 +444,14 @@ elif page == "Prediction Explorer":
                     except Exception:
                         st.warning("Could not sort by that column (mixed types).")
 
-            # metrics and actions
             st.markdown("---")
             st.metric("Rows (filtered)", f"{len(df_filtered):,}")
-            # download
             csv_bytes = df_filtered.to_csv(index=False).encode("utf-8")
             st.download_button("Download filtered CSV", csv_bytes, file_name="filtered_predictions.csv")
 
         with right:
             st.markdown("#### Data preview & charts")
 
-            # show top-level tabs for organization
             tab_table, tab_charts, tab_summary = st.tabs(["Table", "Charts", "Summary"])
 
             with tab_table:
@@ -488,22 +460,20 @@ elif page == "Prediction Explorer":
                     display_df = df_filtered[display_cols].head(sample_n)
                 else:
                     display_df = df_filtered.head(sample_n)
-
                 st.dataframe(display_df, height=480)
 
             with tab_charts:
                 st.markdown("**Quick numeric summaries**")
                 numeric_cols = df_filtered.select_dtypes(include=["number"]).columns.tolist()
                 if numeric_cols:
-                    # show two compact charts side-by-side
                     ch1, ch2 = st.columns(2)
                     with ch1:
-                        col_for_hist = st.selectbox("Histogram column", ["-- None --"] + numeric_cols, index=0, key="hist_col")
+                        col_for_hist = st.selectbox("Histogram column", ["-- None --"] + numeric_cols, index=0)
                         if col_for_hist != "-- None --":
                             st.markdown(f"Histogram for **{col_for_hist}**")
                             st.bar_chart(df_filtered[col_for_hist].dropna().value_counts().sort_index().head(100))
                     with ch2:
-                        col_for_box = st.selectbox("Top values column", ["-- None --"] + numeric_cols, index=0, key="vc_col")
+                        col_for_box = st.selectbox("Top values column", ["-- None --"] + numeric_cols, index=0)
                         if col_for_box != "-- None --":
                             st.markdown(f"Top values for **{col_for_box}**")
                             st.write(df_filtered[col_for_box].value_counts().head(10))
